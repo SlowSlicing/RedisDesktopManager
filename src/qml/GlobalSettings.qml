@@ -18,28 +18,34 @@ Dialog {
     contentItem: Rectangle {
         id: dialogRoot
         implicitWidth: 800
-        implicitHeight: PlatformUtils.isOSX()? 500 : 620
+        implicitHeight: PlatformUtils.isOSX()? 550 : 700
 
-        border.color: "#eeeeee"
-        border.width: 1
+        color: sysPalette.base
 
-        Item {
+        Control {
+            palette: approot.palette
             anchors.fill: parent
             anchors.margins: 20
 
             ScrollView {
                 id: globalSettingsScrollView
                 width: parent.width
-                height: parent.height                
+                height: parent.height
                 ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
 
                 ColumnLayout {
                     id: innerLayout
                     width: PlatformUtils.isOSX()? globalSettingsScrollView.width - 25 : globalSettingsScrollView.width
                     height: (dialogRoot.height - 50 > implicitHeight) ? dialogRoot.height - 50 : implicitHeight
+                    spacing: 8
 
                     SettingsGroupTitle {
                         text: qsTranslate("RDM","General")
+                    }
+
+                    BetterLabel {
+                        color: disabledSysPalette.text
+                        text: qsTranslate("RDM","Application will be restarted to apply this setting.")
                     }
 
                     ComboboxOption {
@@ -51,8 +57,6 @@ Dialog {
                         model: ["system", "en_US", "zh_CN", "zh_TW", "ru_RU", "es_ES", "ja_JP"]
                         value: "system"
                         label: qsTranslate("RDM","Language")
-                        description: qsTranslate("RDM","Application will be restarted to apply this setting.")
-
                         onValueChanged: root.restartRequired = true
                     }
 
@@ -62,10 +66,8 @@ Dialog {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 30
 
-                        value: Qt.platform.os == "osx"? "Helvetica Neue" : "Open Sans"
                         model: Qt.fontFamilies()
                         label: qsTranslate("RDM","Font")
-                        description: qsTranslate("RDM","Application will be restarted to apply this setting.")
 
                         onValueChanged: root.restartRequired = true
                     }
@@ -76,10 +78,33 @@ Dialog {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 30
 
-                        model: ["8", "9", "10", "11", "12"]
-                        value: Qt.platform.os == "osx"? "12" : "11"
+                        model: ["8", "9", "10", "11", "12", "13", "14", "15", "16"]
                         label: qsTranslate("RDM","Font Size")
-                        description: qsTranslate("RDM","Application will be restarted to apply this setting.")
+
+                        onValueChanged: root.restartRequired = true
+                    }
+
+                    ComboboxOption {
+                        id: valueEditorFont
+
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 30
+
+                        model: Qt.fontFamilies()
+                        label: qsTranslate("RDM","Value Editor Font")
+
+                        onValueChanged: root.restartRequired = true
+                    }
+
+                    ComboboxOption {
+                        id: valueEditorFontSize
+
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 30
+
+                        model: ["8", "9", "10", "11", "12", "13", "14", "15", "16"]
+                        value: Qt.platform.os == "osx"? "12" : "11"
+                        label: qsTranslate("RDM","Value Editor Font Size")
 
                         onValueChanged: root.restartRequired = true
                     }
@@ -92,7 +117,6 @@ Dialog {
 
                         value: false
                         label: qsTranslate("RDM","Use system proxy settings")
-                        description: qsTranslate("RDM","Application will be restarted to apply this setting.")
 
                         onValueChanged: root.restartRequired = true
                     }
@@ -232,6 +256,8 @@ Dialog {
         property alias liveUpdateInterval: liveUpdateInterval.value
         property alias appFont: appFont.value
         property alias appFontSize: appFontSize.value
+        property alias valueEditorFont: valueEditorFont.value
+        property alias valueEditorFontSize: valueEditorFontSize.value
         property alias locale: appLang.value
         property alias useSystemProxy: systemProxy.value
     }

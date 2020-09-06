@@ -12,9 +12,14 @@ Button {
     icon.height: 18
     icon.color: "transparent"
     implicitHeight: 30
+    opacity: root.enabled ? 1.0 : 0.8
 
+    palette.button: sysPalette.button
+    palette.windowText: sysPalette.text
+    palette.buttonText: enabled ? sysPalette.text : disabledSysPalette.text
 
-    ToolTip.visible: root.tooltip && hovered
-    ToolTip.text: root.tooltip
+    BetterToolTip {
+        title: root.tooltip
+    }
 }
 

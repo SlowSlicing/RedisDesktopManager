@@ -21,6 +21,8 @@ AbstractEditor {
 
         value: ""
         enabled: root.active || root.state !== "edit"
+        showToolBar: root.state == "edit"
+        showSaveBtn: root.state == "edit"
         showFormatters: root.state == "edit"
         objectName: "rdm_key_hash_key_field"
         formatterSettingsCategory: "formatters_hash_key"
@@ -31,6 +33,7 @@ AbstractEditor {
         Layout.fillWidth: true
         Layout.fillHeight: true        
         enabled: root.active || root.state !== "edit"
+        showToolBar: root.state == "edit"
         showFormatters: root.state == "edit"
         objectName: "rdm_key_hash_text_field"
 

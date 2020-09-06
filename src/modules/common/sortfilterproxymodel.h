@@ -17,6 +17,8 @@ class SortFilterProxyModel : public QSortFilterProxyModel, public QQmlParserStat
     Q_PROPERTY(QString filterString READ filterString WRITE setFilterString NOTIFY filterStringChanged)
     Q_PROPERTY(FilterSyntax filterSyntax READ filterSyntax WRITE setFilterSyntax)
 
+    Q_PROPERTY(int filterKeyColumn READ filterKeyColumn WRITE setFilterKeyColumn)
+
     Q_ENUMS(FilterSyntax)
 
 public:
@@ -26,9 +28,9 @@ public:
     void setSource(QObject *source);
 
     QByteArray sortRole() const;
-    void setSortRole(const QByteArray &role);
+    Q_INVOKABLE void setSortRole(const QByteArray &role);
 
-    void setSortOrder(Qt::SortOrder order);
+    Q_INVOKABLE void setSortOrder(Qt::SortOrder order);
 
     QByteArray filterRole() const;
     void setFilterRole(const QByteArray &role);
@@ -47,6 +49,8 @@ public:
 
     void classBegin();
     void componentComplete();
+
+    Q_INVOKABLE int getOriginalRowIndex(int i);
 
 signals:
     void filterStringChanged();

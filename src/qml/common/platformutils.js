@@ -7,4 +7,3 @@ function isOSXRetina(screen) {
     return isOSX() && screen.devicePixelRatio> 1
 }
 
-

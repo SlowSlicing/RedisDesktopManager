@@ -24,7 +24,7 @@ ApplicationWindow {
     width: 1100
     height: 800
     minimumWidth: 1100
-    minimumHeight: 700
+    minimumHeight: 650
 
     property double wRatio : (width * 1.0) / (Screen.width * 1.0)
     property double hRatio : (height * 1.0) / (Screen.height * 1.0)
@@ -47,13 +47,31 @@ ApplicationWindow {
             console.log("Ratio > 1.0. Resize main window.")
             width = Screen.width * 0.9
             height = Screen.height * 0.8
-        }        
+        }
+
+        if (Qt.platform.os == "windows") {
+            x = Screen.width / 2 - width / 2
+            y = Screen.height / 2 - height / 2
+        }
+
+        appSplitView.restoreState(windowSettings.splitView)
     }
 
+    Component.onDestruction: windowSettings.splitView = appSplitView.saveState()
+
     Settings {
+        id: windowSettings
         category: "windows_settings"
         property alias width: approot.width
         property alias height: approot.height
+        property var splitView
+    }
+
+    Settings {
+        id: appSettings
+        category: "app"
+        property string valueEditorFont
+        property string valueEditorFontSize
     }
 
     SystemPalette {
@@ -63,14 +81,11 @@ ApplicationWindow {
     SystemPalette {
         id: inactiveSysPalette
         colorGroup: SystemPalette.Inactive
-
     }
 
-    FontLoader {
-        id: monospacedFont
-        Component.onCompleted: {
-            source = "qrc:/fonts/Inconsolata-Regular.ttf"
-        }
+    SystemPalette {
+        id: disabledSysPalette
+        colorGroup: SystemPalette.Disabled
     }
 
     QuickStartDialog {
@@ -107,9 +122,10 @@ ApplicationWindow {
         objectName: "rdm_qml_error_dialog"
         visible: false
 
-        function showError(msg) {
+        function showError(msg, details="") {
             icon = StandardIcon.Warning
             text = msg
+            detailedText = details
             open()
         }
 
@@ -176,26 +192,37 @@ ApplicationWindow {
 
     header: AppToolBar {}
 
-    BetterSplitView {
+    Rectangle {
         anchors.fill: parent
+        color: sysPalette.base
+        border.color: sysPalette.mid
+        border.width: 1
+
+    BetterSplitView {
+        id: appSplitView
+        anchors.fill: parent
+        anchors.topMargin: 1
         orientation: Qt.Horizontal
 
         BetterTreeView {
             id: connectionsTree
             SplitView.fillHeight: true
-            SplitView.minimumWidth: 383
+            SplitView.minimumWidth: 404
             SplitView.minimumHeight: 500
-        }
+        }      
 
         ColumnLayout {
             SplitView.fillWidth: true
             SplitView.fillHeight: true
-
             TabBar {
                 id: tabBar
                 objectName: "rdm_main_tab_bar"
                 Layout.fillWidth: true
                 Layout.preferredHeight: 30
+
+                background: Rectangle {
+                    color: sysPalette.base
+                }
 
                 onCountChanged: {
                     updateTimer.start()
@@ -294,15 +321,20 @@ ApplicationWindow {
                 }
             }
         }
+        }
     }
 
     Drawer {
         id: logDrawer
-
+        dragMargin: 0
         width: 0.66 * approot.width
         height: approot.height
         position: 0.3
         edge: Qt.LeftEdge
+        background: Rectangle {
+            color: sysPalette.base
+            border.color: sysPalette.mid
+        }
 
         LogView {
             anchors.fill: parent

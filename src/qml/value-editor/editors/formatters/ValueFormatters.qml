@@ -2,6 +2,7 @@ import QtQuick 2.0
 import QtQml.Models 2.13
 import "./hexy.js" as Hexy
 import "./json-tools.js" as JSONFormatter
+import "../../../common/platformutils.js" as PlatformUtils
 
 ListModel {
     id: rootModel
@@ -18,6 +19,10 @@ ListModel {
         } else {
             return 0
         }
+    }
+
+    function getJSONFormatter() {
+        return rootModel.get(3)
     }
 
     function getFormatterIndex(name) {
@@ -59,6 +64,7 @@ ListModel {
                             return callback(response[0], response[1])
                         })
                     }
+                    return r
                 };
 
                 var isValid = function (formatterName) {
@@ -67,7 +73,8 @@ ListModel {
                             return callback(response[0])
                         })
                     }
-                }
+                    return r
+                };
 
                 rootModel.append({'name': formatterName, 'type': "embedded",})
                 rootModel.setProperty(rootModel.count - 1, "getFormatted", getFormatted(formatterName))
@@ -97,13 +104,15 @@ ListModel {
                 var r = function (formatted, callback) {
                     return formattersManager.encode(formatterName, formatted, callback)
                 }
+                return r
             };
 
             var isValid = function (formatterName) {
                 var r = function (raw, callback) {
                     return formattersManager.isValid(formatterName, raw, callback)
                 }
-            }
+                return r
+            };
 
             rootModel.append({'name': formatterName, 'type': "external"})
             rootModel.setProperty(rootModel.count - 1, "getFormatted", getFormatted(formatterName))
@@ -158,7 +167,10 @@ ListModel {
         }
 
         property var getFormatted: function (raw, callback) {
-            return callback("", Hexy.hexy(qmlUtils.valueToBinary(raw), {'html': true}), true, "html")
+            return callback("", Hexy.hexy(
+                                qmlUtils.valueToBinary(raw),
+                                {'html': true, 'font': appSettings.valueEditorFont}),
+                            true, "html")
         }
     }
 

@@ -22,16 +22,28 @@ def decode(name, value):
     formatter = ENABLED_FORMATTERS[name]
 
     error = ""
+    read_only = formatter.read_only
+    decode_format = formatter.decode_format
+
     try:
         result = formatter.decode(value)
+
+        if type(result) is dict:
+            result_dict = result
+            result = result_dict.get('output', '')
+            error = result_dict.get('error', error)
+            read_only = result_dict.get('read-only', read_only)
+            decode_format = result_dict.get('decode-format', decode_format)
+
     except Exception as e:
+        read_only = True
         error = (
             "Embedded formatter %s error: %s (value: %s)"
             % (name, str(e), value)
         )
         result = ""
 
-    return [error, result, formatter.read_only, formatter.decode_format]
+    return [error, result, read_only, decode_format]
 
 
 def validate(name, value):

@@ -19,12 +19,16 @@ TreeView {
     model: connectionsManager
 
     style: TreeViewStyle {
+        frame: Item {}
+
         indentation: 12
 
         rowDelegate: Rectangle {
             height: PlatformUtils.isOSXRetina(Screen) ? 25 : 30
             color: styleData.selected ? sysPalette.highlight : "transparent"
         }
+
+        transientScrollBars: true
     }
 
     TableViewColumn {
@@ -69,7 +73,11 @@ TreeView {
                     } else if (type === "namespace" && styleData.isExpanded) {
                         return "qrc:/images/" + type + "_open.svg"
                     } else {
-                        return "qrc:/images/" + type + ".svg"
+                        if (type !== "") {
+                            return "qrc:/images/" + type + ".svg"
+                        } else {
+                            return ""
+                        }
                     }
                 }                
 

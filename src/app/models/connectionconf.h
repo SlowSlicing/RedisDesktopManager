@@ -11,6 +11,7 @@ class ServerConfig : public RedisClient::ConnectionConfig
     Q_PROPERTY(QString host READ host WRITE setHost)
     Q_PROPERTY(uint port READ port WRITE setPort)
     Q_PROPERTY(QString auth READ auth WRITE setAuth)
+    Q_PROPERTY(QString username READ username WRITE setUsername)
 
     /* SSL settings */
     Q_PROPERTY(bool sslEnabled READ useSsl WRITE setSsl)
@@ -29,8 +30,7 @@ class ServerConfig : public RedisClient::ConnectionConfig
     Q_PROPERTY(QString keysPattern READ keysPattern WRITE setKeysPattern)
     Q_PROPERTY(QString namespaceSeparator READ namespaceSeparator WRITE setNamespaceSeparator)
     Q_PROPERTY(uint executeTimeout READ executeTimeout WRITE setExecutionTimeout)
-    Q_PROPERTY(uint connectionTimeout READ connectionTimeout WRITE setConnectionTimeout)
-    Q_PROPERTY(bool luaKeysLoading READ luaKeysLoading WRITE setLuaKeysLoading)
+    Q_PROPERTY(uint connectionTimeout READ connectionTimeout WRITE setConnectionTimeout)    
     Q_PROPERTY(bool overrideClusterHost READ overrideClusterHost WRITE setClusterHostOverride)
     Q_PROPERTY(bool ignoreSSLErrors READ ignoreAllSslErrors WRITE setIgnoreAllSslErrors)
     Q_PROPERTY(uint databaseScanLimit READ databaseScanLimit WRITE setDatabaseScanLimit)

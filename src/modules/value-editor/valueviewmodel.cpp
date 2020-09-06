@@ -47,7 +47,7 @@ QVariant ValueEditor::ValueViewModel::data(const QModelIndex& index,
 
   int mappedRole = role;
 
-  if (role == Qt::DisplayRole) {
+  if (role == Qt::DisplayRole && index.column() > 0) {
       mappedRole = m_model->getRoles().key(m_model->getColumnNames().at(index.column()).toLatin1());
   }
 
@@ -245,6 +245,7 @@ void ValueEditor::ValueViewModel::updateRow(int rowIndex, const QVariantMap& row
       return;
     }
     emit dataChanged(index(rowIndex, 0), index(rowIndex, m_model->getColumnNames().size() - 1));
+    emit valueUpdated();
   });
 }
 

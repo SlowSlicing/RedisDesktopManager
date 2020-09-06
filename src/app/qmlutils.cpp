@@ -5,12 +5,19 @@
 #include <QClipboard>
 #include <QDateTime>
 #include <QDebug>
+#include <QDir>
+#include <QFile>
 #include <QFileInfo>
+#include <QScreen>
 #include <QtCharts/QDateTimeAxis>
+#include <QtConcurrent>
+#include <QUrl>
 
 #include "apputils.h"
 #include "qcompress.h"
 #include "value-editor/largetextmodel.h"
+
+#define MAX_CHART_DATA_POINTS 1000
 
 bool QmlUtils::isBinaryString(const QVariant &value) {
   if (!value.canConvert(QVariant::ByteArray)) {
@@ -109,8 +116,20 @@ QVariant QmlUtils::toUtf(const QVariant &value) {
   return QVariant(result);
 }
 
+QString QmlUtils::getNativePath(const QString &path) {
+  return QDir::toNativeSeparators(path);
+}
+
 QString QmlUtils::getPathFromUrl(const QUrl &url) {
   return url.isLocalFile() ? url.toLocalFile() : url.path();
+}
+
+QString QmlUtils::getUrlFromPath(const QString &path) {
+  return QUrl::fromLocalFile(path).toString();
+}
+
+QString QmlUtils::getDir(const QString &path) {
+  return QFileInfo(path).absoluteDir().absolutePath();
 }
 
 bool QmlUtils::fileExists(const QString &path) {
@@ -124,6 +143,27 @@ void QmlUtils::copyToClipboard(const QString &text) {
 
   cb->clear();
   cb->setText(text);
+}
+
+bool QmlUtils::saveToFile(const QVariant &value, const QString &path) {
+  if (!value.canConvert(QVariant::ByteArray)) {
+    return false;
+  }
+
+  QtConcurrent::run([value, path]() {
+    QByteArray val = value.toByteArray();
+
+    QFile outputFile(path);
+    if (outputFile.open(QIODevice::WriteOnly)) {
+      QDataStream outStream(&outputFile);
+      outStream.writeRawData(val, val.size());
+      outputFile.close();
+      return true;
+    }
+    return false;
+  });
+
+  return true;
 }
 
 QtCharts::QDateTimeAxis *findDateTimeAxis(QtCharts::QXYSeries *series) {
@@ -144,18 +184,44 @@ QtCharts::QDateTimeAxis *findDateTimeAxis(QtCharts::QXYSeries *series) {
 }
 
 void QmlUtils::addNewValueToDynamicChart(QtCharts::QXYSeries *series,
-                                         double value) {
+                                         qreal value) {
   using namespace QtCharts;
 
   QDateTimeAxis *ax = findDateTimeAxis(series);
 
-  if (series->count() == 0 && ax) {
+  if (!(ax && series)) {
+      qWarning() << "Cannot add value to dynamic chart. Invalid pointers.";
+      return;
+  }
+
+  int totalPoints = series->count();
+
+  if (totalPoints == 0) {
     ax->setMin(QDateTime::currentDateTime());
   }
 
-  series->append(QDateTime::currentDateTime().toMSecsSinceEpoch(), value);
+  bool dataNotChangedLastFivePoints = (
+              totalPoints > 10
+              && value
+               == series->at(totalPoints - 1).y()
+               == series->at(totalPoints - 2).y()
+               == series->at(totalPoints - 3).y()
+               == series->at(totalPoints - 4).y()
+               == series->at(totalPoints - 5).y()
+              );
 
-  if (series->attachedAxes().size() > 0 && ax) {
+  if (dataNotChangedLastFivePoints) {
+    series->replace(totalPoints - 1, QDateTime::currentDateTime().toMSecsSinceEpoch(), value);
+  } else {
+    series->append(QDateTime::currentDateTime().toMSecsSinceEpoch(), value);
+  }
+
+  if (totalPoints > MAX_CHART_DATA_POINTS) {
+      series->removePoints(0, totalPoints - MAX_CHART_DATA_POINTS);
+      ax->setMin(QDateTime::fromMSecsSinceEpoch(series->at(0).x()));
+  }
+
+  if (series->attachedAxes().size() > 0) {
     ax->setMax(QDateTime::currentDateTime());
   }
 }
@@ -187,4 +253,8 @@ QString QmlUtils::escapeHtmlEntities(const QString &t) {
 
 QString QmlUtils::htmlToPlainText(const QString &html) {
   return QTextDocumentFragment::fromHtml(html).toPlainText();
+}
+
+double QmlUtils::getScreenScaleFactor() {
+  return QApplication::primaryScreen()->logicalDotsPerInch() / 96;
 }

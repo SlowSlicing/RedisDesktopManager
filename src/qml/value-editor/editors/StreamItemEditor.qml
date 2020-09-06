@@ -5,6 +5,7 @@ import QtQuick.Controls.Styles 1.1
 import QtQuick.Dialogs 1.2
 
 import "."
+import "../../common"
 
 AbstractEditor {
     id: root
@@ -12,12 +13,12 @@ AbstractEditor {
 
     property bool active: false
 
-    Text {
+    BetterLabel {
         Layout.fillWidth: true
         text: qsTranslate("RDM","ID")
     }
 
-    TextField {
+    BetterTextField {
             id: idValue
 
             Layout.fillWidth: true
@@ -52,6 +53,8 @@ AbstractEditor {
         Layout.fillWidth: true
         Layout.fillHeight: true        
         enabled: root.active || root.state !== "edit"
+        showToolBar: root.state == "edit"
+        showSaveBtn: root.state == "edit"
         showFormatters: root.state == "edit"
         objectName: "rdm_key_stream_text_field"
 
